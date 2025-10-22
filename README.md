@@ -19,7 +19,7 @@ A ShareX image/text/file custom uploader written with [Bun](https://bun.com/) in
 
 ## SXCU File
 Here's a template to make a .sxcu file if you use this project (make sure to replace the `YOUR_UPLOADER'S_NAME`, `YOUR_SERVER_URL` and `YOUR_TOKEN_HERE` fields!):
-```
+```json
 {
     "Version": "17.0.0",
     "Name": "YOUR_UPLOADER'S_NAME",
