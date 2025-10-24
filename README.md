@@ -14,7 +14,7 @@ A ShareX image/text/file custom uploader written with [Bun](https://bun.com/) in
 | `GET /` | Get a list of every uploaded file | Yes |
 | `POST /` | Upload a new file to the server | Yes |
 
-*`POST /` requires passing the file directly in its body.*
+*`POST /` requires passing the file in the request's form-data with the name "file".*
 *To authenticate, supply a Bearer token to your request's Authorization header (example: `Bearer AAAABBBBCCCCDDDD`).*
 
 ## SXCU File
