@@ -81,59 +81,41 @@ const server = Bun.serve({
                 if (!checkToken(req.headers.get("Authorization")))
                     return new Response("Invalid token!", { status: 401, headers: Headers.user });
 
-                const reader = req.body?.getReader();
+                const file = (await req.formData()).get("file");
 
                 // Check if there is a file and if it's not empty
-                if (!reader) return new Response("Please send a file!", { status: 400, headers: Headers.root });
+                if (!file) return new Response("Please send a file!", { status: 400, headers: Headers.root });
 
                 let id = generateRandomString();
 
-                // Create a temporary file path and a writer to it
+                // Create a temporary file path and write the file to it
                 const tempPath = join(STORAGE_TEMP_PATH, `${id}.tmp`);
-                const fileStream = Bun.file(tempPath).writer();
+                await Bun.write(tempPath, file);
 
-                // Start to stream the request's file to the temporary location
-                try {
-                    let probeBuffer = Buffer.alloc(0);
-                    while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-
-                        const chunk = Buffer.from(value);
-
-                        if (probeBuffer.length < 4100) {
-                            probeBuffer = Buffer.concat([probeBuffer, chunk]);
-
-                            if (probeBuffer.length > 4100) probeBuffer = probeBuffer.subarray(0, 4100);
-                        }
-
-                        fileStream.write(chunk); // Write the file chunk
-                    }
-                    fileStream.end(); // Close the file and automatically flush the buffer
-                } catch (error) {
-                    fileStream.end();
-                    await Bun.file(tempPath).delete();
-                    return new Response("Internal Server Error", { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
-                }
-
-                // Get the actual file type
+                // Now get the actual file type
                 let fileType = await getFileType(tempPath);
-                if (!fileType) fileType = { mime: "text/plain", ext: "txt" };
+                if (!fileType) fileType = { mime: "text/plain", ext: "txt" }; // default to txt if unknown
 
-                // Make sure the file name is not taken
+                // Make sure the file name is not taken by regenerating if it exists (up to 10 times)
                 let filePath = join(STORAGE_PATH, `${id}.${fileType.ext}`);
                 let attempts = 0;
                 while (await Bun.file(filePath).exists() && attempts++ < 10) {
+                    // Make sure it didn't exceed 10 attempts
+                    if (attempts >= 10) {
+                        await Bun.file(tempPath).delete();
+                        return new Response("Failed to save the file, please try again.", { status: 500, headers: Headers.root });
+                    }
+
                     id = generateRandomString();
                     filePath = join(STORAGE_PATH, `${id}.${fileType.ext}`);
-                }
-                if (attempts >= 10) {
-                    await Bun.file(tempPath).delete();
-                    return new Response("Failed to save the file, please try again.", { status: 500, headers: Headers.root });
+                    
+                    attempts++;
                 }
 
+                // Move the temporary file to its final location if everything went well
                 await rename(tempPath, filePath);
 
+                // And return the response (and log the new file in the console)
                 console.info(`New file: ${id}.${fileType.ext} (${filePath})! Uploaded by: ${getClientIP(req)}`);
                 return new Response(BASE_URL + id + "." + fileType.ext, { headers: Headers.user });
             }

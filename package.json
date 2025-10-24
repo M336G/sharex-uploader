@@ -1,7 +1,7 @@
 {
   "name": "sharex-uploader",
   "description": "A ShareX image/text/file custom uploader written with Bun in Javascript!",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "app.js",
   "author": "M336",
   "license": "MPL-2.0",

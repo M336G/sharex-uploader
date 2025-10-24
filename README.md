@@ -29,8 +29,10 @@ Here's a template to make a .sxcu file if you use this project (make sure to rep
     "Headers": {
         "Authorization": "Bearer YOUR_TOKEN_HERE"
     },
-    "Body": "Binary",
-    "URL": "{regex:^(http[s]?://.*)$}"
+    "Body": "MultipartFormData",
+    "FileFormName": "file",
+    "URL": "{regex:^(http[s]?://.*)$}",
+    "ErrorMessage": "{regex:^(?!http[s]?://).*}" 
 }
 ```
 
