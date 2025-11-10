@@ -7,7 +7,6 @@ A ShareX image/text/file custom uploader written with [Bun](https://bun.com/) in
 3. Start the project with `bun run start`!
 
 ## Endpoints
-**config.json**
 | Endpoint | Description | Authorization? |
 | --- | --- | --- |
 | `GET /<filename>` | Get an uploaded file | No |
